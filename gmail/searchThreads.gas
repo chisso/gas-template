@@ -16,7 +16,7 @@
 function searchThreads(label, timeWindow = {}) {
   const timeBefore = convertToEpochTime(timeWindow['before']);
   const timeAfter = convertToEpochTime(timeWindow['after']);
-  const filter = `label:${label} before:${timeBefore}`;
+  const filter = `label:${label} before:${timeBefore} after:${timeAfter}`;
 
   return GmailApp.search(filter);
 }
