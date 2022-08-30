@@ -1,0 +1,25 @@
+// use property service for secrets
+function postMessage(msg) {
+  const url = 'https://slack.com/api/chat.postMessage';
+  const prop = PropertiesService.getScriptProperties();
+  const token = prop.getProperty("slack_token");
+  const channel = prop.getProperty("slack_channel");
+
+  const params = {
+    token: slack_token,
+    channel: slack_channel,
+    text: msg,
+  };
+  const reqUrl = url + '?' + queryString(params);
+
+  UrlFetchApp.fetch(reqUrl);
+}
+
+function queryString(dict) {
+  let keys = [];
+  for (let k in dict) {
+    keys.push(k + '=' + encodeURIComponent(dict[k]));
+  }
+
+  return keys.join("&");
+}

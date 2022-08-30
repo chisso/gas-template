@@ -1,0 +1,36 @@
+function write(sheet, content, firstCol = 'A', lastCol = '', removeDup = false, sortOption = {}) {
+  const firstRow = sheet.getLastRow() + 1;
+  const lastRow = firstRow + content.length - 1;
+  const firstColumn = colOption['first'] || 'A';
+  const lastColumn = colOption['last'] || sheet.getLastColumn();
+
+  // 末尾に行を確保する
+  addRow(sheet, firstColumn, lastRow);
+
+  // 書き込み
+  const range = firstColumn + firstRow + ':' + lastColumn + lastRow;
+  sheet.getRange(range).setValues(content);
+
+  const allData = sheet.getRange(ignoreRowNum + 1, 1, sheet.getLastRow(), sheet.getLastColumn());
+  if (Object.keys(sortOption).length > 0) {
+    // 未指定の場合はheader（1行）を除外して並び替え
+    const ignoreRowNum = sortOption['ignoreRowNum'] || 1;
+    const sortBy = sortOption['sortBy'] || [{column: 1, ascending: false}];
+    allData.sort(sortBy);
+  }
+  if (removeDup) {
+    allData.removeDuplicates();
+  }
+}
+
+// 行が足りなかったら追加する
+function addRow(sheet, col, targetRow) {
+  // 空白を含む最終行
+  const sheetLastRowIndex = sheet.getRange(col+':'+col).getLastRow();
+  // 5行は空いてるようにする
+  const shortage = targetRow - sheetLastRowIndex + 5;
+
+  if (shortage > 0) {
+    sheet.insertRowsAfter(sheetLastRowIndex, shortage);
+  }
+}

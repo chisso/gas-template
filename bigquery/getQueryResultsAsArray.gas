@@ -1,0 +1,58 @@
+function getQueryResultsAsArray(projectId, query) {
+  if (projectId === null) {
+    console.log('project id for BigQuery is unset.')
+    return;
+  }
+
+  const request = {
+    query: query,
+    useLegacySql: false
+  };
+
+  let queryResults
+    , jobId
+    ;
+
+  try {
+    queryResults = BigQuery.Jobs.query(request, projectId);
+    jobId = queryResults.jobReference.jobId;
+  } catch (err) {
+    console.log('projectId : ' + projectId);
+    console.log('query : ' + query);
+    console.log(err);
+    return;
+  }
+
+  // Check on status of the Query Job.
+  let sleepTimeMs = 500;
+  while (!queryResults.jobComplete) {
+    Utilities.sleep(sleepTimeMs);
+    sleepTimeMs *= 2;
+    queryResults = BigQuery.Jobs.getQueryResults(projectId, jobId);
+  }
+
+  // Get all the rows of results.
+  let rows = queryResults.rows;
+  while (queryResults.pageToken) {
+    queryResults = BigQuery.Jobs.getQueryResults(projectId, jobId, {
+      pageToken: queryResults.pageToken
+    });
+    rows = rows.concat(queryResults.rows);
+  }
+
+  // Change query result to array
+  const numRow = rows.length;
+  let data = new Array(numRow);
+  for (let i = 0; i < numRow; i++) {
+    let cols = rows[i].f;
+    let numColumn = cols.length;
+
+    data[i] = new Array(numColumn);
+
+    for (let j = 0; j < numColumn; j++) {
+      data[i][j] = cols[j].v;
+    }
+  }
+
+  return data;
+}

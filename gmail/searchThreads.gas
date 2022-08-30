@@ -1,0 +1,35 @@
+/*
+ * NOTE:
+ *  threads will include mails which does NOT match the filter
+ *  if a thread match the filter, whole threads are returned
+ *
+ * timeWindow = {
+ *  before|after: {
+ *    // diff(hour) or absolute is required
+ *    // diff filter will be floored
+ *    // ex. -1 at 8:31 will be 7:00
+ *    diff: \d+ // required for unit mode
+ *    absolute: 'yyyy/MM/dd hh:mm:ss' // date format
+ *  }
+ * }
+ */
+function searchThreads(label, timeWindow = {}) {
+  const timeBefore = convertToEpochTime(timeWindow['before']);
+  const timeAfter = convertToEpochTime(timeWindow['after']);
+  const filter = `label:${label} before:${timeBefore}`;
+
+  return GmailApp.search(filter);
+}
+
+function convertToEpochTime(window) {
+  const absolute = window['absolute'];
+  if (absolute) {
+    const target = Date.parse(absolute);
+    // retrun as second
+    return target/1000;
+  }
+
+  const diff = window['diff'];
+
+  return Math.floor(Date.now()/1000/3600 + diff) * 3600;
+}
